@@ -6,17 +6,7 @@ import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { SessionProvider } from "next-auth/react";
 import { trpc } from "@/lib/trpc";
-
-/** Server-side tRPC URL for SSR; must match the public app URL on Vercel (not only VERCEL_URL). */
-function getBaseUrl() {
-  if (typeof window !== "undefined") return "";
-  const canonical =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.AUTH_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-    "http://localhost:3000";
-  return canonical.replace(/\/$/, "");
-}
+import { getTrpcHttpUrl } from "@/lib/public-origin";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -24,7 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: `${getBaseUrl()}/api/trpc`,
+          url: getTrpcHttpUrl(),
           transformer: superjson,
         }),
       ],

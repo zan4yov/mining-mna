@@ -3,10 +3,9 @@ import { signOut as nextAuthSignOut } from "next-auth/react";
 /**
  * Sign out and land on /login on the **current** browser origin.
  *
- * NextAuth's default `signOut({ redirect: true })` sets `window.location` to `data.url` from
- * the server first, which is built from AUTH_URL/NEXTAUTH_URL at build time and often becomes
- * `http://localhost:3000/login` in production. Using `redirect: false` clears the session via
- * POST, then we navigate ourselves so the host always matches.
+ * NextAuth's default `signOut({ redirect: true })` prefers `data.url` from the server, which
+ * can point at the wrong host if env URLs don't match deployment. We call `redirect: false`,
+ * then navigate to `${origin}/login` so the tab always stays on the same host.
  */
 export async function signOutToLogin() {
   if (typeof window === "undefined") {

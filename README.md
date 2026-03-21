@@ -66,7 +66,7 @@ Do **not** set `NODE_ENV=development` on Vercel. Do **not** use `http://localhos
 
 After any change to env vars, **Redeploy** so the build and Edge/runtime pick them up.
 
-`next.config.mjs` maps **`AUTH_URL` → `NEXTAUTH_URL`** at build time for Auth.js client compatibility.
+`next.config.mjs` maps **`AUTH_URL` → `NEXTAUTH_URL`** and **`AUTH_URL` → `NEXT_PUBLIC_APP_URL`** (when the latter is unset) so the client bundle matches deployment. Runtime code does **not** hardcode `localhost`; tRPC uses `lib/public-origin.ts`.
 
 ### 4. First deploy and database schema
 
