@@ -139,10 +139,74 @@ docs-requirement/    # Product/design reference (prototype + Cursor context)
 
 ---
 
+## Deploying to Vercel
+
+This app is a standard **Next.js** deployment. The production database is expected to be **Neon Postgres** (or any Postgres URL compatible with `@neondatabase/serverless`).
+
+### 1. Push code to GitHub
+
+Ensure the latest code is on the branch you want to deploy (for example `main`).
+
+### 2. Create a Vercel project
+
+1. Go to [vercel.com](https://vercel.com) and sign in.
+2. **Add New → Project** and import **mining-mna** (`zan4yov/mining-mna`).
+3. **Framework Preset:** Next.js (default). **Build Command:** `npm run build` (default). **Output:** default.
+4. Deploy once with placeholder envs if needed, then add real variables and redeploy (step 3).
+
+### 3. Postgres (Neon)
+
+**Option A — Vercel Marketplace (simplest)**  
+In your Vercel project: **Storage → Create Database → Neon**. Connect it to the project. Vercel will inject `DATABASE_URL` (and often an unpooled URL). Use the pooled URL for serverless unless Neon docs say otherwise.
+
+**Option B — Existing Neon**  
+In the [Neon console](https://console.neon.tech/), copy the connection string (SSL). Add it in Vercel as `DATABASE_URL`.
+
+### 4. Environment variables (Production)
+
+In **Project → Settings → Environment Variables**, add at least:
+
+| Name | Notes |
+|------|--------|
+| `DATABASE_URL` | From Neon / Vercel Storage |
+| `AUTH_SECRET` | Strong random string (e.g. `openssl rand -base64 32`) — **different from local** |
+| `AUTH_URL` | Your live origin, e.g. `https://your-project.vercel.app` (or your custom domain with `https://`) |
+| `NEXT_PUBLIC_APP_URL` | Same value as `AUTH_URL` for consistent client-side URLs |
+| `GROQ_API_KEY` | Required if you use AI extraction in production |
+
+Optional: `DATABASE_URL_UNPOOLED`, `BLOB_READ_WRITE_TOKEN`, Upstash Redis — only if you use those features.
+
+Do **not** set `NODE_ENV=development` on Vercel.
+
+After changing env vars, trigger **Redeploy** on the latest deployment so the new values apply.
+
+### 5. Apply schema and seed the database
+
+The Drizzle schema must exist in the **production** database before the app can run correctly.
+
+From your laptop (with network access to Neon):
+
+1. Temporarily set `DATABASE_URL` in `.env.local` to the **same** production string as in Vercel (or export it in the shell).
+2. Run:
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+`db:seed` is idempotent: it skips if demo users already exist. For a fresh production DB you get the same demo accounts as locally — **change passwords** before sharing the URL widely.
+
+### 6. Smoke test
+
+Open your production URL, sign in, and hit `/analyst`, `/executive`, and `/admin` (with the right roles). If login redirects fail, double-check `AUTH_URL` / `NEXT_PUBLIC_APP_URL` match the browser’s address (including `https`).
+
+---
+
 ## Troubleshooting
 
 - **`DATABASE_URL` missing when running `db:push` or `db:seed`:** Confirm `.env.local` exists in the project root and contains `DATABASE_URL`. For CI or shells without `.env.local`, export `DATABASE_URL` in the environment.
 - **Build warnings about `DATABASE_URL`:** A placeholder may be used at build time; runtime must use a real URL on your host.
+- **Vercel: login or redirects broken:** Set `AUTH_URL` and `NEXT_PUBLIC_APP_URL` to the exact public URL users open (including `https://`). Redeploy after changing env vars.
 
 ---
 
