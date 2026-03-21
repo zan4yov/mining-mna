@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { signOutToLogin } from "@/lib/auth-client";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 
@@ -53,7 +54,7 @@ export default function ExecutivePage() {
                 <div className="font-mono text-[9px] uppercase tracking-wide text-exec-muted">{session?.user?.team}</div>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="border-exec-border text-exec-muted" onClick={() => signOut({ callbackUrl: "/login" })}>
+            <Button variant="outline" size="sm" className="border-exec-border text-exec-muted" onClick={() => signOutToLogin()}>
               Sign out
             </Button>
           </div>

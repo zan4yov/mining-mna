@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { signOutToLogin } from "@/lib/auth-client";
 import { trpc } from "@/lib/trpc";
 import { CompanyCard } from "@/components/analyst/CompanyCard";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ export default function AnalystHomePage() {
             <div className="text-xs font-semibold">{session?.user?.name}</div>
             <div className="text-[9px] text-text-faint">{session?.user?.team}</div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: "/login" })}>
+          <Button variant="outline" size="sm" onClick={() => signOutToLogin()}>
             Sign out
           </Button>
         </div>

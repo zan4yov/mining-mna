@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AdminSignOut } from "@/components/admin/AdminSignOut";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
@@ -18,6 +19,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </Link>
           </nav>
         </div>
+        <AdminSignOut />
       </header>
       <div className="p-6">{children}</div>
     </div>

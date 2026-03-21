@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOutToLogin } from "@/lib/auth-client";
 import { NAV_MODULES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { useCalculator } from "@/components/analyst/calculator-context";
@@ -89,7 +89,7 @@ export function CalculatorChrome({ children }: { children: React.ReactNode }) {
             <div className="flex h-7 w-7 items-center justify-center rounded border border-border bg-inset font-mono text-[10px] font-semibold text-primary">
               {session?.user?.name?.slice(0, 2).toUpperCase() ?? "—"}
             </div>
-            <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: "/login" })}>
+            <Button variant="outline" size="sm" onClick={() => signOutToLogin()}>
               Sign out
             </Button>
           </div>
