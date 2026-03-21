@@ -1,25 +1,49 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
 const protectedPrefixes = ["/admin", "/analyst", "/executive"];
 
+type SessionPayload = {
+  user?: { role?: string } | null;
+};
+
 /**
- * Edge-safe auth: do not import `@/server/auth` here — that pulls bcrypt + DB into
- * the middleware bundle and breaks on Vercel Edge (webpack "reading 'call'" / RSC issues).
- * JWT session strategy + getToken() matches Auth.js encrypted session cookies.
+ * Edge middleware must not import `@/server/auth` (bcrypt + DB) or `next-auth/jwt`
+ * (`jose` uses APIs like CompressionStream that are unreliable on Vercel Edge).
+ * Instead, call the Node route `/api/auth/session` with the incoming Cookie header —
+ * it decrypts the session correctly in production.
  */
-export async function middleware(request: NextRequest) {
-  const secure = request.nextUrl.protocol === "https:";
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: secure,
+async function getSessionFromEdge(request: NextRequest): Promise<SessionPayload> {
+  const url = new URL("/api/auth/session", request.url);
+  const headers: Record<string, string> = {
+    cookie: request.headers.get("cookie") ?? "",
+  };
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (host) headers["x-forwarded-host"] = host;
+  const proto = request.headers.get("x-forwarded-proto");
+  if (proto) headers["x-forwarded-proto"] = proto;
+
+  const res = await fetch(url, {
+    headers,
+    cache: "no-store",
   });
+  if (!res.ok) return {};
+  try {
+    const raw: unknown = await res.json();
+    if (!raw || typeof raw !== "object") return {};
+    return raw as SessionPayload;
+  } catch {
+    return {};
+  }
+}
+
+export async function middleware(request: NextRequest) {
+  const session = await getSessionFromEdge(request);
+  const user = session?.user;
+  const loggedIn = !!user;
+  const role = user?.role;
 
   const pathname = request.nextUrl.pathname;
-  const loggedIn = !!token;
-  const role = token?.role as string | undefined;
 
   if (pathname.startsWith("/login")) {
     if (loggedIn) {

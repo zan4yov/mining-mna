@@ -7,10 +7,15 @@ import superjson from "superjson";
 import { SessionProvider } from "next-auth/react";
 import { trpc } from "@/lib/trpc";
 
+/** Server-side tRPC URL for SSR; must match the public app URL on Vercel (not only VERCEL_URL). */
 function getBaseUrl() {
   if (typeof window !== "undefined") return "";
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const canonical =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.AUTH_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+    "http://localhost:3000";
+  return canonical.replace(/\/$/, "");
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
