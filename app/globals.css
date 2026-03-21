@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.625rem;
+    --background: 240 20% 98%;
+    --foreground: 230 60% 11%;
+  }
+}
+
+@layer utilities {
+  .mono-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
