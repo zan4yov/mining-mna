@@ -207,6 +207,7 @@ Open your production URL, sign in, and hit `/analyst`, `/executive`, and `/admin
 - **`DATABASE_URL` missing when running `db:push` or `db:seed`:** Confirm `.env.local` exists in the project root and contains `DATABASE_URL`. For CI or shells without `.env.local`, export `DATABASE_URL` in the environment.
 - **Build warnings about `DATABASE_URL`:** A placeholder may be used at build time; runtime must use a real URL on your host.
 - **Vercel: login or redirects broken:** Set `AUTH_URL` and `NEXT_PUBLIC_APP_URL` to the exact public URL users open (including `https://`). Redeploy after changing env vars.
+- **Vercel: `TypeError` / webpack `reading 'call'` on page load:** Middleware must stay **Edge-safe**. This project uses `getToken` from `next-auth/jwt` in `middleware.ts` instead of importing `@/server/auth` (which pulls bcrypt + DB into the Edge bundle and can break production).
 
 ---
 
