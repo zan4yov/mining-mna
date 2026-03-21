@@ -41,8 +41,8 @@ export default function AnalystHomePage() {
             size="sm"
             onClick={async () => {
               const c = await create.mutateAsync({
-                name: "New Target Company",
-                ticker: "NTC",
+                name: "Company",
+                ticker: "TBD",
                 location: "—",
                 type: "Thermal Coal",
                 iup: "—",

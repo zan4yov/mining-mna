@@ -5,6 +5,11 @@ Web application for **mining sector M&A** workflows: company profiles, DCF-style
 **Repository:** [github.com/zan4yov/mining-mna](https://github.com/zan4yov/mining-mna)  
 **Production (example):** `https://mining-mna.vercel.app`
 
+### Accounts (where credentials live)
+
+- **Passwords and user records are not documented in this repository.** They exist only in your Postgres database.
+- After deployment, **super admins** sign in and manage **email, role, and active status** under **Admin → Users** in the running app. That screen is the authoritative place to see **who** can access the system (never commit passwords or shared demo accounts here).
+
 ---
 
 ## Features
@@ -78,12 +83,11 @@ After any change to env vars, **Redeploy** so the build and Edge/runtime pick th
    vercel link
    vercel env pull .env.local
    npm run db:push
-   npm run db:seed
    ```
 
-   `vercel env pull` writes secrets to `.env.local` (gitignored). `drizzle.config.ts` and the seed script read it. Alternatively paste `DATABASE_URL` into `.env.local` manually.
+   Optional **first super admin** (env-only; no credentials in the repo): set `SEED_ENABLE=true`, `SEED_SUPER_ADMIN_EMAIL`, and `SEED_SUPER_ADMIN_PASSWORD` in `.env.local` (or Vercel), then run `npm run db:bootstrap` once. Remove those variables after the account exists.
 
-   `db:seed` is idempotent (skips if users already exist). **Change demo passwords** before sharing the app widely.
+   `vercel env pull` writes secrets to `.env.local` (gitignored). `drizzle.config.ts` and scripts read it. Alternatively paste `DATABASE_URL` into `.env.local` manually.
 
 ### 5. URLs to use
 
@@ -98,21 +102,10 @@ Open your **`https://…`** origin, sign in, and verify `/analyst`, `/executive`
 
 ---
 
-## Demo accounts (after `db:seed`)
-
-Use only for **staging / demos**; rotate passwords for anything public.
-
-| Role | Email | Password |
-|------|--------|----------|
-| Super admin | `admin@local.test` | `Admin123!` |
-| Analyst | `analyst@local.test` | `team123` |
-| Executive | `exec@local.test` | `board456` |
-
----
-
 ## Troubleshooting (production)
 
 - **Login or redirects broken:** `AUTH_URL` and `NEXT_PUBLIC_APP_URL` must match the URL in the browser (including `https://`). Redeploy after edits.
+- **Companies/users empty, “Failed to fetch” on tRPC, or CORS to `localhost`:** The client bundle must not use `http://localhost` for `NEXT_PUBLIC_APP_URL` on Vercel. Set `NEXT_PUBLIC_APP_URL` and `AUTH_URL` to your production `https://…` origin, redeploy, and confirm `npm run build` was run with those vars. The app also falls back to `VERCEL_URL` when `VERCEL=1` and the configured origin is localhost (see `lib/public-origin.ts`).
 - **Sign-out lands on wrong host:** The app uses `signOut({ redirect: false })` then navigates to `{origin}/login` so the server’s callback URL cannot send users to localhost.
 - **Preview URL 401:** Deployment Protection — use the production domain or adjust protection in Vercel.
 - **`DATABASE_URL` in scripts:** `drizzle.config.ts` loads `.env.local`; for one-off commands you can use `vercel env pull` or `dotenv-cli` pointing at a file that contains `DATABASE_URL`.
@@ -126,7 +119,7 @@ app/                 # Next.js routes (auth, analyst, executive, admin, API)
 components/          # UI
 server/              # Auth, DB, tRPC routers
 lib/                 # Calculations, TRPC helpers, auth-client
-scripts/seed.ts      # DB seed
+scripts/bootstrap-admin.ts  # Optional first super_admin from SEED_* env (see above)
 docs-requirement/    # Product/design reference
 ```
 
@@ -140,7 +133,7 @@ Only needed if you change code and want to run the app on your machine.
 git clone https://github.com/zan4yov/mining-mna.git && cd mining-mna
 npm install
 cp .env.example .env.local   # fill DATABASE_URL, AUTH_SECRET, AUTH_URL=http://localhost:3000, NEXT_PUBLIC_APP_URL=http://localhost:3000
-npm run db:push && npm run db:seed
+npm run db:push
 npm run dev
 ```
 
@@ -150,7 +143,7 @@ Open `http://localhost:3000`. See `.env.example` for all keys.
 |--------|---------|
 | `npm run dev` | Local dev server |
 | `npm run build` / `npm run start` | Production-like run locally |
-| `npm run db:push` / `db:seed` / `db:studio` | Database |
+| `npm run db:push` / `db:bootstrap` / `db:studio` | Database |
 
 ---
 

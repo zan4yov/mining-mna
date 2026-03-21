@@ -448,20 +448,12 @@ for three roles: super_admin, analyst, and executive.
    - Show error state if credentials fail, including "Account deactivated" message
    - Styling: white card on light indigo-blue gradient background, Plus Jakarta Sans font
 
-5. Create a seed script at scripts/seed.ts:
-   - Creates 1 super_admin, 2 analyst users, and 2 executive users
-   - Hashes passwords with bcryptjs (rounds: 10)
-   - Inserts into users table using Drizzle
-   - super_admin has created_by = null (first user, self-bootstrapped)
-   - analysts and executives have created_by = super_admin.id
-   - Add "db:seed": "tsx scripts/seed.ts" to package.json
-
-Seed users:
-  super_admin: { email: 'admin@mna.internal', password: 'admin123!', name: 'System Admin', team: 'IT Operations' }
-  analysts:    { email: 'budi@mna.internal', password: 'team123', name: 'Budi Santoso', team: 'M&A Team' }
-               { email: 'rina@mna.internal', password: 'team123', name: 'Rina Kusuma', team: 'M&A Team' }
-  executives:  { email: 'direktur@mna.internal', password: 'board456', name: 'Pak Direktur', team: 'Board' }
-               { email: 'komisaris@mna.internal', password: 'board456', name: 'Ibu Komisaris', team: 'Board' }
+5. Optional bootstrap script scripts/bootstrap-admin.ts:
+   - Creates a single super_admin only when SEED_ENABLE=true and SEED_SUPER_ADMIN_EMAIL / SEED_SUPER_ADMIN_PASSWORD are set in the environment (never committed)
+   - Hashes password with bcryptjs (rounds: 10)
+   - Skips if a user with that email already exists
+   - Add "db:bootstrap": "tsx scripts/bootstrap-admin.ts" to package.json
+   - Additional users are created by super_admin in the app (no demo users in repo)
 ```
 
 ---
@@ -1542,7 +1534,7 @@ Final polish and production readiness pass.
        }
      }
    - Add README.md with:
-     - Setup instructions (clone → npm install → env vars → db:push → db:seed → dev)
+     - Setup instructions (clone → npm install → env vars → db:push → optional db:bootstrap → dev)
      - Vercel deployment steps (connect repo → add integrations → deploy)
      - Required Vercel integrations: Neon Postgres, Vercel Blob, Upstash Redis (via Vercel Marketplace)
 
@@ -1585,7 +1577,7 @@ After scaffolding, connect these Vercel storage integrations before running loca
    ```bash
    vercel env pull .env.local   # Pulls Neon, Blob, and Upstash vars at once
    npm run db:push               # Push schema to Neon
-   npm run db:seed               # Seed demo users
+   npm run db:bootstrap          # Optional: first super_admin from SEED_* env only
    npm run dev                   # Start local dev server
    ```
 
@@ -1601,7 +1593,7 @@ Before first production deploy:
 - [ ] NEXT_PUBLIC_APP_URL set to production domain
 - [ ] Neon, Blob, KV integrations connected to production environment
 - [ ] Database migrations run against production Neon instance
-- [ ] Seed script run for initial users (creates first super_admin)
+- [ ] Optional `db:bootstrap` run once if using SEED_* env for first super_admin
 - [ ] First login: change super_admin default password immediately
 - [ ] Verify middleware correctly blocks all cross-role access on production URL
 - [ ] Test super_admin can create analyst and executive users

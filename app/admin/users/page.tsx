@@ -20,7 +20,11 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-bold">Users</h1>
+      <h1 className="mb-1 text-xl font-bold">Users</h1>
+      <p className="mb-4 max-w-2xl text-xs text-admin-muted">
+        Everyone who can sign in is listed below. Passwords are never shown—only email, role, and active status. New users
+        receive credentials out of band (not from this app’s repository).
+      </p>
       <div className="mb-8 max-w-md rounded-lg border border-admin-border bg-admin-surface p-4">
         <h2 className="mb-3 text-sm font-semibold text-admin-muted">Create user</h2>
         <div className="space-y-2">

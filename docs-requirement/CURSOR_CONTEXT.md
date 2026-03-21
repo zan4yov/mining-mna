@@ -232,7 +232,7 @@ Drizzle schema, tRPC routers, and React components that all use these shapes.
 ```typescript
 type Company = {
   id: string
-  name: string           // "PT Mineral Sejahtera Nusantara"
+  name: string           // e.g. company legal name
   ticker: string         // "MSN"
   location: string       // "Kalimantan Timur"
   type: string           // "Thermal Coal"

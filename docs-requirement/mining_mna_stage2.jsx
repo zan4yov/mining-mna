@@ -12,12 +12,13 @@ if (typeof document !== "undefined" && !document.getElementById("mna-fonts")) {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const USERS = [
-  { id:"analyst1", name:"Budi Santoso",  role:"analyst",   avatar:"BS", team:"M&A Team" },
-  { id:"analyst2", name:"Rina Kusuma",   role:"analyst",   avatar:"RK", team:"M&A Team" },
-  { id:"exec1",    name:"Pak Direktur",  role:"executive", avatar:"PD", team:"Board" },
-  { id:"exec2",    name:"Ibu Komisaris", role:"executive", avatar:"IK", team:"Board" },
+  { id:"analyst1", name:"Analyst A",  role:"analyst",   avatar:"A1", team:"M&A Team" },
+  { id:"analyst2", name:"Analyst B",   role:"analyst",   avatar:"A2", team:"M&A Team" },
+  { id:"exec1",    name:"Executive A",  role:"executive", avatar:"E1", team:"Board" },
+  { id:"exec2",    name:"Executive B", role:"executive", avatar:"E2", team:"Board" },
 ];
-const PASSWORDS = { analyst1:"team123", analyst2:"team123", exec1:"board456", exec2:"board456" };
+// Wireframe-only; not production credentials.
+const PASSWORDS = { analyst1:"wireframe", analyst2:"wireframe", exec1:"wireframe", exec2:"wireframe" };
 
 const NAV = [
   { id:1, icon:"🏢", label:"Company Profile" },
@@ -33,19 +34,19 @@ const NAV = [
 
 const INITIAL_COMPANIES = [
   {
-    id:"msn", name:"PT Mineral Sejahtera Nusantara", ticker:"MSN",
-    location:"Kalimantan Timur", type:"Thermal Coal", iup:"IUP-2024-KT-0081",
-    entityType:"PT Mineral Sejahtera Nusantara (MSN)", listedOn:"IDX", mineralClass:"Thermal Coal GAR 4,500–6,600",
+    id:"coa", name:"Sample Company Alpha", ticker:"SCA",
+    location:"Region East", type:"Thermal Coal", iup:"IUP-EXAMPLE-001",
+    entityType:"Sample Company Alpha (SCA)", listedOn:"IDX", mineralClass:"Thermal Coal GAR 4,500–6,600",
     shareGov:30, sharePublic:51, shareForeign:19, status:"active",
     snapshots:[
-      { date:"2026-01-15", analyst:"Budi Santoso",
+      { date:"2026-01-15", analyst:"Analyst A",
         params:{ coalPrice:120,discRate:10,annualProd:5,mineLife:20,cashCost:24,royaltyRate:7,taxRate:22,capex:180,
                  measuredMt:50,indicatedMt:40,inferredMt:20,measuredGar:5400,indicatedGar:5200,inferredGar:4900,
                  recoveryRate:85,stripRatio:6,haulingDist:35,bargeDist:180,crushCost:2.5,portHandling:3.5,
                  acquisitionCost:120,debtPct:60,debtCost:8,loanTenor:5,sharedInfra:12,gaConsolidation:30,procSavings:8,
                  iupValid:true,certClean:true,amdal:true,ppa:false,dmb:true },
         npv:1022,irr:18.4,payback:5.5,bearNpv:661,bullNpv:1383,ddScore:4.2,synergy:26,recommendation:"proceed" },
-      { date:"2025-10-03", analyst:"Rina Kusuma",
+      { date:"2025-10-03", analyst:"Analyst B",
         params:{ coalPrice:115,discRate:10,annualProd:5,mineLife:20,cashCost:25,royaltyRate:7,taxRate:22,capex:185,
                  measuredMt:48,indicatedMt:38,inferredMt:18,measuredGar:5400,indicatedGar:5200,inferredGar:4900,
                  recoveryRate:83,stripRatio:6,haulingDist:35,bargeDist:180,crushCost:2.5,portHandling:3.5,
@@ -55,12 +56,12 @@ const INITIAL_COMPANIES = [
     ]
   },
   {
-    id:"bke", name:"PT Bara Kencana Energi", ticker:"BKE",
-    location:"Kalimantan Selatan", type:"Thermal Coal", iup:"IUP-2023-KS-0045",
-    entityType:"PT Bara Kencana Energi (BKE)", listedOn:"IDX", mineralClass:"Thermal Coal GAR 4,000–5,800",
+    id:"cob", name:"Sample Company Beta", ticker:"SCB",
+    location:"Region South", type:"Thermal Coal", iup:"IUP-EXAMPLE-002",
+    entityType:"Sample Company Beta (SCB)", listedOn:"IDX", mineralClass:"Thermal Coal GAR 4,000–5,800",
     shareGov:0, sharePublic:65, shareForeign:35, status:"watchlist",
     snapshots:[
-      { date:"2026-02-20", analyst:"Budi Santoso",
+      { date:"2026-02-20", analyst:"Analyst A",
         params:{ coalPrice:120,discRate:11,annualProd:3,mineLife:15,cashCost:28,royaltyRate:7,taxRate:22,capex:120,
                  measuredMt:30,indicatedMt:25,inferredMt:10,measuredGar:5100,indicatedGar:4900,inferredGar:4600,
                  recoveryRate:82,stripRatio:7,haulingDist:45,bargeDist:220,crushCost:2.8,portHandling:4.0,
@@ -70,9 +71,9 @@ const INITIAL_COMPANIES = [
     ]
   },
   {
-    id:"smb", name:"PT Sumber Mas Borneo", ticker:"SMB",
-    location:"Kalimantan Tengah", type:"Thermal Coal", iup:"IUP-2022-KT-0112",
-    entityType:"PT Sumber Mas Borneo (SMB)", listedOn:"Unlisted", mineralClass:"Thermal Coal GAR 4,200–5,500",
+    id:"cog", name:"Sample Company Gamma", ticker:"SCG",
+    location:"Region Central", type:"Thermal Coal", iup:"IUP-EXAMPLE-003",
+    entityType:"Sample Company Gamma (SCG)", listedOn:"Unlisted", mineralClass:"Thermal Coal GAR 4,200–5,500",
     shareGov:20, sharePublic:80, shareForeign:0, status:"watchlist", snapshots:[]
   },
 ];
@@ -757,7 +758,7 @@ function AnalystApp({user, companies, setCompanies, onLogout}) {
             <div style={{fontSize:18,fontWeight:700,color:S.text,fontWeight:700,fontSize:20,letterSpacing:-0.5,marginBottom:3}}>Company Workspace</div>
             <div style={{fontSize:11,color:S.textFaint}}>AI extraction · 9-module valuation model · versioned snapshots</div>
           </div>
-          <button onClick={()=>setCompanies(p=>[...p,{id:"new"+Date.now(),name:"New Target Company",ticker:"NTC",location:"—",type:"Thermal Coal",iup:"—",entityType:"—",listedOn:"—",mineralClass:"—",shareGov:0,sharePublic:100,shareForeign:0,status:"watchlist",snapshots:[]}])}
+          <button onClick={()=>setCompanies(p=>[...p,{id:"new"+Date.now(),name:"Company",ticker:"TBD",location:"—",type:"Thermal Coal",iup:"—",entityType:"—",listedOn:"—",mineralClass:"—",shareGov:0,sharePublic:100,shareForeign:0,status:"watchlist",snapshots:[]}])}
             style={{background:S.cyan,border:"none",borderRadius:6,padding:"8px 16px",fontSize:11,fontWeight:600,color:"#ffffff",cursor:"pointer",fontFamily:S.fontUI,letterSpacing:0.3}}>+ Add Target</button>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
@@ -1116,18 +1117,6 @@ function LoginScreen({onLogin}) {
             style={{width:"100%",background:loading?S.bg4:S.cyan,border:`1px solid ${loading?S.border:S.cyan}`,borderRadius:5,padding:"10px",fontSize:12,fontWeight:600,color:loading?S.textDim:"#ffffff",cursor:loading?"not-allowed":"pointer",fontFamily:S.fontUI,letterSpacing:0.5,transition:"all 0.15s"}}>
             {loading ? "Authenticating…" : "Sign In →"}
           </button>
-
-          <div style={{marginTop:20,padding:"12px 14px",background:S.bg4,borderRadius:5,border:`1px solid ${S.border2}`}}>
-            <div style={{fontSize:9,color:S.textDim,textTransform:"uppercase",letterSpacing:1.5,marginBottom:8,fontFamily:S.fontUI}}>Demo Credentials</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {[["Analyst","analyst1 / team123","analyst"],["Executive","exec1 / board456","executive"]].map(([role,cred,type])=>(
-                <div key={role} style={{padding:"8px 10px",background:S.bg,borderRadius:4,border:`1px solid ${S.border2}`}}>
-                  <div style={{fontSize:9,color:type==="executive"?S.amber:S.cyan,textTransform:"uppercase",letterSpacing:1,marginBottom:3,fontFamily:S.fontUI}}>{role}</div>
-                  <div style={{fontSize:10,color:S.textMuted,fontFamily:S.fontMono}}>{cred}</div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div style={{textAlign:"center",marginTop:20,fontSize:10,color:S.textFaint,fontFamily:S.fontMono}}>

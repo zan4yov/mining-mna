@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("analyst@local.test");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -87,8 +87,10 @@ export default function LoginPage() {
           </Button>
         </form>
         <p className="mt-6 text-center text-[10px] text-text-faint font-mono">CONFIDENTIAL · INTERNAL USE ONLY</p>
-        <p className="mt-4 text-[10px] text-text-muted">
-          Demo seed: analyst@local.test / team123 · exec@local.test / board456 · admin@local.test / Admin123!
+        <p className="mt-4 text-center text-[10px] leading-relaxed text-text-muted">
+          Use the email and password issued by your organization. Active users and roles are listed by super admins in{" "}
+          <span className="font-medium text-text-muted">Admin → Users</span> after sign-in—account details are not stored in
+          this repository.
         </p>
       </div>
     </div>
