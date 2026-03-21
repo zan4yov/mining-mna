@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("analyst@local.test");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
@@ -19,18 +17,28 @@ export default function LoginPage() {
     e.preventDefault();
     setErr("");
     setLoading(true);
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    setLoading(false);
-    if (res?.error) {
-      setErr(res.error === "CredentialsSignin" ? "Invalid credentials" : res.error);
-      return;
+    try {
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+      if (res?.error) {
+        setErr(res.error === "CredentialsSignin" ? "Invalid credentials" : res.error);
+        return;
+      }
+      if (!res?.ok) {
+        setErr("Sign in failed. Please try again.");
+        return;
+      }
+      // Full navigation so the session cookie is always sent on the next request.
+      // router.push("/") + refresh can race the RSC `auth()` call and bounce back to /login.
+      window.location.assign("/");
+    } catch {
+      setErr("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.refresh();
-    router.push("/");
   }
 
   return (
