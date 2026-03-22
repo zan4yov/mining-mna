@@ -5,7 +5,6 @@ import {
   useCallback,
   useContext,
   useLayoutEffect,
-  useMemo,
   useSyncExternalStore,
 } from "react";
 
@@ -88,6 +87,21 @@ function readProfile(): ScreenProfile {
   };
 }
 
+function profilesEqual(a: ScreenProfile, b: ScreenProfile): boolean {
+  return (
+    a.width === b.width &&
+    a.height === b.height &&
+    a.breakpoint === b.breakpoint &&
+    a.formFactor === b.formFactor &&
+    a.orientation === b.orientation &&
+    a.isTouchPrimary === b.isTouchPrimary &&
+    a.prefersReducedMotion === b.prefersReducedMotion
+  );
+}
+
+/** `useSyncExternalStore` must return the same object reference when nothing changed, or React loops (error #185). */
+let clientProfileSnapshot: ScreenProfile | null = null;
+
 function subscribe(onChange: () => void) {
   if (typeof window === "undefined") return () => {};
 
@@ -124,7 +138,12 @@ function subscribe(onChange: () => void) {
 
 function getSnapshot(): ScreenProfile {
   if (typeof window === "undefined") return SERVER_PROFILE;
-  return readProfile();
+  const next = readProfile();
+  if (clientProfileSnapshot && profilesEqual(clientProfileSnapshot, next)) {
+    return clientProfileSnapshot;
+  }
+  clientProfileSnapshot = next;
+  return clientProfileSnapshot;
 }
 
 function getServerSnapshot(): ScreenProfile {
@@ -149,9 +168,7 @@ export function ScreenProfileProvider({ children }: { children: React.ReactNode 
     applyHtmlDataset(profile);
   }, [profile]);
 
-  const value = useMemo(() => profile, [profile]);
-
-  return <ScreenProfileContext.Provider value={value}>{children}</ScreenProfileContext.Provider>;
+  return <ScreenProfileContext.Provider value={profile}>{children}</ScreenProfileContext.Provider>;
 }
 
 export function useScreenProfile(): ScreenProfile {
