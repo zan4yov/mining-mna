@@ -60,7 +60,18 @@ function formFactorForWidth(width: number): ScreenFormFactor {
   return "desktop";
 }
 
+/** Safari < 14 / legacy WebKit: `mql.addEventListener` is missing — use deprecated addListener. */
+function subscribeMediaQuery(mq: MediaQueryList, onChange: () => void): () => void {
+  if (typeof mq.addEventListener === "function") {
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }
+  mq.addListener(onChange);
+  return () => mq.removeListener(onChange);
+}
+
 function readProfile(): ScreenProfile {
+  if (typeof window === "undefined") return SERVER_PROFILE;
   const width = window.innerWidth;
   const height = window.innerHeight;
   const orientation: ScreenOrientation = width >= height ? "landscape" : "portrait";
@@ -78,31 +89,41 @@ function readProfile(): ScreenProfile {
 }
 
 function subscribe(onChange: () => void) {
-  const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(onChange) : null;
-  if (ro && document.documentElement) {
-    ro.observe(document.documentElement);
+  if (typeof window === "undefined") return () => {};
+
+  const cleanups: (() => void)[] = [];
+
+  if (typeof ResizeObserver !== "undefined" && document.documentElement) {
+    try {
+      const ro = new ResizeObserver(onChange);
+      ro.observe(document.documentElement);
+      cleanups.push(() => ro.disconnect());
+    } catch {
+      /* ignore */
+    }
   }
+
   window.addEventListener("resize", onChange);
   window.addEventListener("orientationchange", onChange);
+  cleanups.push(() => window.removeEventListener("resize", onChange));
+  cleanups.push(() => window.removeEventListener("orientationchange", onChange));
+
   const mqs = [
     window.matchMedia("(pointer: coarse)"),
     window.matchMedia("(hover: none)"),
     window.matchMedia("(prefers-reduced-motion: reduce)"),
   ];
   for (const mq of mqs) {
-    mq.addEventListener("change", onChange);
+    cleanups.push(subscribeMediaQuery(mq, onChange));
   }
+
   return () => {
-    ro?.disconnect();
-    window.removeEventListener("resize", onChange);
-    window.removeEventListener("orientationchange", onChange);
-    for (const mq of mqs) {
-      mq.removeEventListener("change", onChange);
-    }
+    for (const u of cleanups) u();
   };
 }
 
 function getSnapshot(): ScreenProfile {
+  if (typeof window === "undefined") return SERVER_PROFILE;
   return readProfile();
 }
 
@@ -152,14 +173,17 @@ export function useScreenProfileOptional(): ScreenProfile | null {
 export function useMediaQuery(query: string): boolean {
   const subscribeMq = useCallback(
     (onChange: () => void) => {
+      if (typeof window === "undefined") return () => {};
       const mq = window.matchMedia(query);
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
+      return subscribeMediaQuery(mq, onChange);
     },
     [query],
   );
 
-  const getSnapshotMq = useCallback(() => window.matchMedia(query).matches, [query]);
+  const getSnapshotMq = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia(query).matches;
+  }, [query]);
   const getServerSnapshotMq = useCallback(() => false, []);
 
   return useSyncExternalStore(subscribeMq, getSnapshotMq, getServerSnapshotMq);
