@@ -7,6 +7,7 @@ import superjson from "superjson";
 import { SessionProvider } from "next-auth/react";
 import { trpc } from "@/lib/trpc";
 import { getTrpcHttpUrl } from "@/lib/public-origin";
+import { ScreenProfileProvider } from "@/lib/screen-profile";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -23,9 +24,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionProvider>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </trpc.Provider>
+      <ScreenProfileProvider>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        </trpc.Provider>
+      </ScreenProfileProvider>
     </SessionProvider>
   );
 }

@@ -8,10 +8,58 @@
     --background: 240 20% 98%;
     --foreground: 230 60% 11%;
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Match hook breakpoints without waiting for client JS (first paint). */
+  @media (max-width: 767px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    html {
+      font-size: 15px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html *,
+  html *::before,
+  html *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer utilities {
   .mono-nums {
     font-variant-numeric: tabular-nums;
+  }
+
+  .safe-pb {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  .safe-pt {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+
+  .safe-p-x {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+
+  /** Use on primary actions when `useScreenProfile().isTouchPrimary` is true. */
+  .touch-target-comfortable {
+    min-height: max(2.75rem, 44px);
+    min-width: max(2.75rem, 44px);
   }
 }

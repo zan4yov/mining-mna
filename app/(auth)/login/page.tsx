@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useScreenProfile } from "@/lib/screen-profile";
+import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const { formFactor, isTouchPrimary } = useScreenProfile();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,8 +45,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-[#eef1ff] via-[#f5f7ff] to-[#ede9ff] px-4 font-sans">
-      <div className="w-full max-w-md rounded-lg border border-border bg-surface p-8 shadow-sm">
+    <div
+      className={cn(
+        "relative flex min-h-dvh min-h-screen items-center justify-center bg-gradient-to-br from-[#eef1ff] via-[#f5f7ff] to-[#ede9ff] font-sans safe-pt safe-pb",
+        formFactor === "phone" ? "px-3" : "px-4",
+      )}
+    >
+      <div
+        className={cn(
+          "w-full max-w-md rounded-lg border border-border bg-surface shadow-sm",
+          formFactor === "desktop" ? "p-8" : "p-6",
+        )}
+      >
         <div className="mb-8 flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-md border border-primary-border bg-primary-bg text-lg">
             ⛏
@@ -82,7 +95,11 @@ export default function LoginPage() {
             />
             {err ? <p className="mt-1 text-[10px] text-danger">{err}</p> : null}
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className={cn("w-full", isTouchPrimary && "touch-target-comfortable")}
+            disabled={loading}
+          >
             {loading ? "Signing in…" : "Sign In →"}
           </Button>
         </form>
